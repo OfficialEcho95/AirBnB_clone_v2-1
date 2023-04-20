@@ -163,3 +163,48 @@ def places_search():
             i += 1
 
     return jsonify([obj.to_dict() for obj in places])
+
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
+def search_places():
+    """Searches for Place objects based on the JSON in the request body"""
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({'error': 'Not a JSON'}), 400
+    states = json_data.get('states', [])
+    cities = json_data.get('cities', [])
+    amenities = json_data.get('amenities', [])
+    if not states and not cities and not amenities:
+        places = storage.all('Place').values()
+        return jsonify([place.to_dict() for place in places])
+    state_objs = []
+    city_objs = []
+    amenity_objs = []
+    for state_id in states:
+        state_obj = storage.get('State', state_id)
+        if state_obj:
+            state_objs.append(state_obj)
+    for city_id in cities:
+        city_obj = storage.get('City', city_id)
+        if city_obj:
+            city_objs.append(city_obj)
+    for amenity_id in amenities:
+        amenity_obj = storage.get('Amenity', amenity_id)
+        if amenity_obj:
+            amenity_objs.append(amenity_obj)
+    places = []
+    for state_obj in state_objs:
+        for city_obj in state_obj.cities:
+            if city_obj not in city_objs:
+                city_objs.append(city_obj)
+    for city_obj in city_objs:
+        for place_obj in city_obj.places:
+            if place_obj not in places:
+                places.append(place_obj)
+    if amenity_objs:
+        temp_places = []
+        for place_obj in places:
+            amenities = [amenity.id for amenity in place_obj.amenities]
+            if set(amenities) >= set(amenity.id for amenity in amenity_objs):
+                temp_places.append(place_obj)
+        places = temp_places
+    return jsonify([place.to_dict() for place in places])
