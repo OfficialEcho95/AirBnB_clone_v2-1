@@ -15,6 +15,7 @@ app.register_blueprint(app_views)
 CORS(app, resources={'/*': {'origins': host}})
 app.url_map.strict_slashes = False
 
+
 @app.teardown_appcontext
 def teardown_app_context(exception):
     """Close the storage session."""
@@ -25,6 +26,7 @@ def teardown_app_context(exception):
 def error_404(error):
     '''Handles the 404 HTTP error code.'''
     return jsonify(error='Not found'), 404
+
 
 @app.errorhandler(400)
 def error_400(error):
