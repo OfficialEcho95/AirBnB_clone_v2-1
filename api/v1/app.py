@@ -10,8 +10,10 @@ from flask import jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
+host = os.getenv("HBNB_API_HOST", "0.0.0.0")
 app.register_blueprint(app_views)
-
+CORS(app, resources={'/*': {'origins': host}})
+app.url_map.strict_slashes = False
 
 @app.teardown_appcontext
 def teardown_app_context(exception):
