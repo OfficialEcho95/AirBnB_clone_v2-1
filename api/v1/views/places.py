@@ -164,6 +164,7 @@ def places_search():
 
     return jsonify([obj.to_dict() for obj in places])
 
+
 @app_views.route('/places_search', methods=['POST'], strict_slashes=False)
 def search_places():
     """Searches for Place objects based on the JSON in the request body"""
